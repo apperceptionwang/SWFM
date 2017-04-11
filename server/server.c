@@ -9,28 +9,16 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
+#include "pthreadpool.h"
+
+const int thread_num = 16;
+const int queue_max_num = 128;
 
 int port =8000;
 
 
-void *rec_message(void *sock_des)
-{
-    //printf("客户端上线\n");
-    int temp_sock_descriptor = *(int*)sock_des;
-    char buf[1024];// 缓冲区大小
-    while(1)
-    {
-        if(recv(temp_sock_descriptor,buf,1024,0) ==-1)
-        {
-            printf("客户端下线");
-            return ((void *)0);
-        }
-        printf("received from client:%s\n",buf);
-    }
-    return ((void *)0);
-}
+void *rec_message(void *sock_des);
 
-int find_alive_thread();
 /*服务端*/
 int main(int argc, char** argv) {
 
@@ -39,7 +27,6 @@ int main(int argc, char** argv) {
     int sock_descriptor;//  套接口描述字
     int temp_sock_descriptor;
     socklen_t address_size;
-    
 
     int i,len;
 
@@ -88,39 +75,51 @@ int main(int argc, char** argv) {
         exit(1);
     }
 
+    address_size = sizeof(sockaddr_in);
     printf("accepting connections  \n");
+    struct thread_pool *pool = thread_pool_init(thread_num,queue_max_num);
 
     while(1)
     {   
         //用来监听的端口sock_descriptor
-        
         temp_sock_descriptor = accept(sock_descriptor,(struct sockaddr *)&pin, &address_size);
         if(temp_sock_descriptor== -1)
         {
            perror("call to accept");
            continue ;
         }
-        
+        if(thread_add_job(pool, &temp_sock_descriptor,&rec_message) == 0)
+        {
+            perror("add job fail");
+            continue;
+        }
+    }
 
-        char buf[1024];// 缓冲区大小
-        int recount = recv(temp_sock_descriptor,buf,1024,0);
-        if(recount ==-1)
-        {
-            printf("客户端下线");
-            continue ;
-        }
-        if(recount == 0)
-        {
-            printf("网络中断");
-            continue ;
-        }
-        if(recount >= 1024)
-        {
-            recount = 1023;
-        }
-        buf[recount] = '\0';
+    return (EXIT_SUCCESS);
+}
 
-        printf("received from client:%s\n",buf);
+void *rec_message(void *sock_des)
+{
+    char buf[1024];// 缓冲区大小
+    int temp_sock_descriptor = *(int*)sock_des;
+    int recount = recv(temp_sock_descriptor,buf,1024,0);
+    if(recount ==-1)
+    {
+        printf("客户端下线");
+        return ((void *)0);
+    }
+    if(recount == 0)
+    {
+        printf("网络中断\n");
+        return ((void *)0);
+    }
+    if(recount >= 1024)
+    {
+        recount = 1023;
+    }
+    buf[recount] = '\0';
+
+    printf("received from client:%s\n",buf);
 
         /*int PASCAL FAR recv( SOCKET s, char FAR* buf, int len, int flags);
 　　        s：一个标识已连接套接口的描述字。
@@ -129,7 +128,13 @@ int main(int argc, char** argv) {
 　　        flags：指定调用方式。
          */
         
-    }
+    strcpy(buf,"I get it");
 
-    return (EXIT_SUCCESS);
+    if(send(temp_sock_descriptor,buf,strlen(buf),0) == -1)
+    {
+        perror("call to send");
+        return ((void *)0);
+    }
+    close(temp_sock_descriptor);
+    return ((void *)0);
 }
