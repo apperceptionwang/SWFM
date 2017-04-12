@@ -39,11 +39,11 @@ void *thread_work(void *arg)
     {
         //lock
         pthread_mutex_lock(&(pool->mutex));
-        if(pool->job_quene_cur_num <= 0)
+        do
         {
             //wait
             pthread_cond_wait(&(pool->queue_not_empty), &(pool->mutex));
-        }
+        }while(pool->job_quene_cur_num <= 0);
        
         work_job = pool->first;
         pool->job_quene_cur_num--;
