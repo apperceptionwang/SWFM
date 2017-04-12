@@ -24,4 +24,4 @@ struct thread_pool
 
 struct thread_pool *thread_pool_init(int t_num,int job_num);
 void *thread_work(void *arg);
-int thread_add_job(struct thread_pool *pool,void *arg,void *job_fun(void *));
+int thread_add_job(struct thread_pool *pool,int arg,void *job_fun(void *));

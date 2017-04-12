@@ -88,11 +88,7 @@ int main(int argc, char** argv) {
            perror("call to accept");
            continue ;
         }
-        if(thread_add_job(pool, &temp_sock_descriptor,&rec_message) == 0)
-        {
-            perror("add job fail");
-            continue;
-        }
+        thread_add_job(pool, temp_sock_descriptor,&rec_message);
     }
 
     return (EXIT_SUCCESS);
