@@ -39,7 +39,7 @@ void *thread_work(void *arg)
     {
         //lock
         pthread_mutex_lock(&(pool->mutex));
-        if(pool->job_quene_cur_num <= 0)
+        while(pool->job_quene_cur_num <= 0)
         {
             //wait
             pthread_cond_wait(&(pool->queue_not_empty), &(pool->mutex));
@@ -58,7 +58,7 @@ void *thread_work(void *arg)
         pthread_mutex_unlock(&(pool->mutex));
         //unlock
 
-        (*(work_job->job_function))(work_job->arg);
+        (*(work_job->job_function))(&(work_job->arg));
         free(work_job);
         work_job = NULL;
     }
@@ -92,7 +92,7 @@ int thread_add_job(struct thread_pool *pool,int arg,void *job_fun(void *))
     pool->job_quene_cur_num++;
     pool->end = end_job;
     end_job->job_function = job_fun;
-    end_job->arg = &arg;
+    end_job->arg = arg;
     //ublock
     pthread_mutex_unlock(&(pool->mutex));
     /*if(pool->job_quene_cur_num == 1)

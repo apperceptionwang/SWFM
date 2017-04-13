@@ -1,7 +1,7 @@
 struct job
 {
     void* (*job_function)(void *);
-    void *arg;
+    int arg;
     struct job *next;
 };
 
