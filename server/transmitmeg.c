@@ -1,5 +1,8 @@
 #include <pthread.h>
 #include <stdio.h>
+#include <string.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #include "lib/transmitmeg.h"
 
 void *transmit_meg(void *sock_des)
@@ -8,6 +11,7 @@ void *transmit_meg(void *sock_des)
     char send_buf[1024];//发送缓冲区
     int temp_sock_descriptor = *(int*)sock_des;
     rec_message(temp_sock_descriptor,recv_buf);
+    printf("%s\n",recv_buf);
     send_message(temp_sock_descriptor,send_buf);
 
     return NULL;
@@ -19,7 +23,7 @@ void rec_message(int temp_sock_descriptor,char buf[])
     if(recount ==-1)
     {
         printf("客户端下线");
-        return ((void *)0);
+        return ;
     }
     if(recount == 0)
     {
@@ -50,7 +54,8 @@ void send_message(int temp_sock_descriptor,char buf[])
     if(send(temp_sock_descriptor,buf,strlen(buf),0) == -1)
     {
         perror("call to send");
-        return ((void *)0);
+        return ;
     }
     close(temp_sock_descriptor);
+    return ;
 }
