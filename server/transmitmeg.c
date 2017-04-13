@@ -43,7 +43,6 @@ void rec_message(int temp_sock_descriptor,char buf[])
 　　        flags：指定调用方式。
          */
         
-   
     return ;
 }
 
