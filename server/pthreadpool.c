@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "pthreadpool.h"
+#include "lib/pthreadpool.h"
 
 struct thread_pool *thread_pool_init(int t_num,int job_num)
 {

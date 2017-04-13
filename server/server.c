@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <signal.h>
-#include "pthreadpool.h"
+#include "lib/pthreadpool.h"
 
 const int thread_num = 16;
 const int queue_max_num = 128;
