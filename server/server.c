@@ -10,6 +10,7 @@
 #include <pthread.h>
 #include <signal.h>
 #include "lib/pthreadpool.h"
+#include "lib/transmitmeg.h"
 
 const int thread_num = 16;
 const int queue_max_num = 128;
@@ -20,15 +21,13 @@ int port =8000;
 void *rec_message(void *sock_des);
 
 /*服务端*/
-int main(int argc, char** argv) {
-
+int main(int argc, char** argv) 
+{
     struct sockaddr_in sin;//struct sockaddr和struct sockaddr_in这两个结构体用来处理网络通信的地址。
     struct sockaddr_in pin;
     int sock_descriptor;//  套接口描述字
     int temp_sock_descriptor;
     socklen_t address_size;
-
-    int i,len;
 
     /*
      *int socket(int domain, int type, int protocol);
@@ -88,49 +87,8 @@ int main(int argc, char** argv) {
            perror("call to accept");
            continue ;
         }
-        thread_add_job(pool, temp_sock_descriptor,&rec_message);
+        thread_add_job(pool, temp_sock_descriptor,&transmit_meg);
     }
 
     return (EXIT_SUCCESS);
-}
-
-void *rec_message(void *sock_des)
-{
-    char buf[1024];// 缓冲区大小
-    int temp_sock_descriptor = *(int*)sock_des;
-    int recount = recv(temp_sock_descriptor,buf,1024,0);
-    if(recount ==-1)
-    {
-        printf("客户端下线");
-        return ((void *)0);
-    }
-    if(recount == 0)
-    {
-        printf("网络中断\n");
-        return ((void *)0);
-    }
-    if(recount >= 1024)
-    {
-        recount = 1023;
-    }
-    buf[recount] = '\0';
-
-    printf("received from client:%s\n",buf);
-
-        /*int PASCAL FAR recv( SOCKET s, char FAR* buf, int len, int flags);
-　　        s：一个标识已连接套接口的描述字。
-　　        buf：用于接收数据的缓冲区。
-　　        len：缓冲区长度。
-　　        flags：指定调用方式。
-         */
-        
-    strcpy(buf,"I get it");
-
-    if(send(temp_sock_descriptor,buf,strlen(buf),0) == -1)
-    {
-        perror("call to send");
-        return ((void *)0);
-    }
-    close(temp_sock_descriptor);
-    return ((void *)0);
 }
